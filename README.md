@@ -50,6 +50,10 @@ Avenger Initiative backs up your entire OpenClaw system to a **private GitHub re
 | Weekly | `backup/weekly/YYYY-WNN` | Last 8 weeks |
 | Monthly | `backup/monthly/YYYY-MM` | Last 12 months |
 
+## What's in the vault?
+
+Every backup automatically generates a human-friendly **`README.md`** in the vault root — so anyone (or any agent) landing in the repo immediately knows what it is, what's encrypted vs plaintext, and exactly how to restore. It includes step-by-step restore commands, natural-language Avenger agent commands, and security notes. A compact **`AVENGER-MANIFEST.json`** is also written with machine-readable backup metadata for scripted restores.
+
 ---
 
 ## Installation
@@ -153,6 +157,28 @@ This skill uses:
 - **No external servers** — data goes only to your own GitHub account
 
 See [SECURITY.md](SECURITY.md) for full script-by-script analysis and audit instructions.
+
+---
+
+## Changelog
+
+### v1.0.4
+- Each backup now generates a human-friendly `README.md` inside the vault with purpose, restore commands, and Avenger agent commands
+- Added `AVENGER-MANIFEST.json` (machine-readable backup metadata)
+
+### v1.0.3
+- Fixed: `main` branch now always exists (setup.sh initializes it on first run)
+- Fixed: backup commits to `main` first, then creates dated snapshot branch
+
+### v1.0.2
+- Added ProSkills.md + ClawHub badges to README
+- Full installation guide (3 methods: CLI, ProSkills.md, git clone)
+
+### v1.0.1
+- Added `.clawhubsafe` and `SECURITY.md` to clarify false-positive security scan flags
+
+### v1.0.0
+- Initial release
 
 ---
 
