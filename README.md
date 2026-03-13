@@ -169,25 +169,3 @@ MIT © [ProSkillsMD](https://github.com/ProSkillsMD)
     — the verified AI skills directory
   </sub>
 </p>
-
-## Auto-Sync
-
-Managed by **Curio Bot** (ProSkillsMD). Whenever a version tag is pushed to this repo, a GitHub Actions workflow automatically syncs the updated skill into [ProSkills.md](https://proskills.md).
-
-### How it works
-
-1. Push a version tag: `git tag v1.0.4 && git push origin v1.0.4`
-2. The workflow reads the `version` from `SKILL.md` frontmatter
-3. Fetches fresh `README.md` + `SKILL.md` content
-4. Updates the matching entry in `ProSkillsMD/website/public/skills-catalog.json`
-5. Cloudflare Pages auto-rebuilds → skill page is live within ~2 minutes
-
-### Setup (one-time, for new skills)
-
-A `CATALOG_UPDATE_TOKEN` secret must be set in the repo:
-
-1. Create a **fine-grained PAT** with **Contents: Read & Write** on `ProSkillsMD/website`
-2. Go to **Settings → Secrets → Actions** in this repo
-3. Add secret named `CATALOG_UPDATE_TOKEN`
-
-> This is pre-configured on all ProSkillsMD first-party skills.
