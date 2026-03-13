@@ -143,45 +143,134 @@ if [ -d "$SKILLS_DIR" ]; then
     log "  ✓ $SKILL_COUNT skills"
 fi
 
-# ---- 7. Vault manifest -----------------------------------
+# ---- 7. README + Manifest --------------------------------
 HOSTNAME=$(hostname 2>/dev/null || echo "unknown")
 OC_VER=$(python3 -c "import json; print(json.load(open('$OPENCLAW_DIR/update-check.json')).get('current','?'))" 2>/dev/null || echo "?")
+BACKUP_TS=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+BACKUP_DATE=$(date -u '+%B %d, %Y at %H:%M UTC')
 
-cat > AVENGER-MANIFEST.md << MANIFEST
-# 🛡️ Avenger Initiative — Vault Manifest
+cat > README.md << README
+# 🛡️ Avenger Initiative — Encrypted Backup Vault
 
-**Last backup:** $(date -u '+%Y-%m-%dT%H:%M:%SZ')
-**Host:** $HOSTNAME | **OpenClaw:** $OC_VER
+This is an automated encrypted backup of an [OpenClaw](https://openclaw.ai) agent system,
+managed by the [Avenger Initiative](https://proskills.md/skills/avenger-initiative) skill.
 
-## Branch Structure
+**Last backup:** $BACKUP_DATE
+**Host:** \`$HOSTNAME\` | **OpenClaw:** $OC_VER
 
-| Branch | Purpose |
-|--------|---------|
-| \`main\` | ✅ Always the **latest backup** — restore from here by default |
-| \`backup/daily/YYYY-MM-DD\` | Daily snapshots · last 7 kept |
-| \`backup/weekly/YYYY-WNN\` | Weekly snapshots · last 8 kept |
-| \`backup/monthly/YYYY-MM\` | Monthly snapshots · last 12 kept |
+---
 
-## Contents
+## What's in this vault?
 
-| Path | Encrypted | Notes |
-|------|-----------|-------|
-| \`config/openclaw.json.enc\` | ✅ AES-256 | All API keys & bot tokens |
-| \`config/cron-jobs.json\` | No | Scheduled jobs |
-| \`workspace/*.md\` | No | SOUL, IDENTITY, MEMORY, etc. |
+Everything needed to fully restore an OpenClaw agent system from zero:
+
+| Path | Encrypted | Contents |
+|------|-----------|----------|
+| \`config/openclaw.json.enc\` | ✅ AES-256-CBC | All API keys, bot tokens, plugin config |
+| \`config/cron-jobs.json\` | No | Scheduled jobs and heartbeats |
+| \`workspace/*.md\` | No | SOUL.md, IDENTITY.md, MEMORY.md, AGENTS.md, etc. |
 | \`workspace/memory/\` | No | Daily memory logs |
-| \`agents/*/\` | No | Per-agent files |
-| \`skills/\` | No | Custom skill definitions |
+| \`agents/<name>/\` | No | Per-agent SOUL, IDENTITY, MEMORY, HEARTBEAT files |
+| \`skills/<name>/\` | No | Custom skill definitions, scripts, and references |
 
-## Restore
+> **Note:** \`openclaw.json\` contains all secrets and is the only encrypted file.
+> Everything else is plain text — safe to read directly in GitHub.
+
+---
+
+## Branch structure
+
+| Branch | Purpose | Retention |
+|--------|---------|-----------|
+| \`main\` | ✅ **Always the latest backup** — start here | Forever |
+| \`backup/daily/YYYY-MM-DD\` | Daily point-in-time snapshots | Last 7 kept |
+| \`backup/weekly/YYYY-WNN\` | Weekly snapshots (created Sundays) | Last 8 kept |
+| \`backup/monthly/YYYY-MM\` | Monthly snapshots (created on 1st) | Last 12 kept |
+
+---
+
+## How to restore
+
+### Full restore (latest)
 
 \`\`\`bash
-# From latest (recommended)
-bash restore.sh
+# 1. Clone this vault
+git clone <this-repo-url> vault && cd vault
 
-# From a specific date
-bash restore.sh --branch backup/daily/YYYY-MM-DD
+# 2. Run the restore script
+bash skills/avenger-initiative/scripts/restore.sh --vault .
+
+# 3. Restart OpenClaw
+openclaw gateway restart
 \`\`\`
+
+### Restore from a specific date
+
+\`\`\`bash
+git clone <this-repo-url> vault && cd vault
+git checkout backup/daily/2026-03-10
+bash skills/avenger-initiative/scripts/restore.sh --vault .
+openclaw gateway restart
+\`\`\`
+
+### Decrypt openclaw.json manually
+
+\`\`\`bash
+# You need the encryption key (64-char hex, stored in your password manager)
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 \
+  -pass "pass:<YOUR_KEY>" \
+  -in config/openclaw.json.enc \
+  -out openclaw.json
+\`\`\`
+
+---
+
+## Avenger Initiative commands
+
+Tell your OpenClaw agent any of these:
+
+| Command | What it does |
+|---------|-------------|
+| \`"avenger backup"\` | Run a backup right now |
+| \`"avenger status"\` | Show last backup time, branch, and vault URL |
+| \`"restore from vault"\` | Start guided restore flow |
+| \`"avenger setup"\` | First-time setup wizard (new machine) |
+
+Or run scripts directly:
+
+\`\`\`bash
+# Manual backup
+bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/backup.sh
+
+# Manual restore (latest)
+bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/restore.sh
+
+# Setup on a new machine
+bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/setup.sh --repo <vault-url>
+\`\`\`
+
+---
+
+## Security
+
+- Encryption: AES-256-CBC · PBKDF2 · 100,000 iterations
+- Key storage: Local only (\`~/.openclaw/credentials/avenger.key\`) — never committed
+- Everything else in this repo is intentionally plaintext (no secrets)
+
+---
+
+*Managed by [Avenger Initiative](https://proskills.md/skills/avenger-initiative) · Runs nightly at 02:00 UTC*
+README
+
+# Also keep a compact machine-readable manifest
+cat > AVENGER-MANIFEST.json << MANIFEST
+{
+  "backup_at": "$BACKUP_TS",
+  "host": "$HOSTNAME",
+  "openclaw_version": "$OC_VER",
+  "daily_branch": "$DAILY_BRANCH",
+  "vault_repo": "$VAULT_REPO"
+}
 MANIFEST
 
 # ---- .gitignore ------------------------------------------
