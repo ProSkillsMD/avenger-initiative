@@ -1,18 +1,7 @@
 ---
 name: avenger-initiative
 description: Encrypted GitHub backup and restore for any OpenClaw agent system. Creates branch-per-night backups with smart retention (7 daily, 8 weekly, 12 monthly branches). Backs up openclaw.json (AES-256 encrypted), agent memories, SOUL/IDENTITY files, cron jobs, and custom skills to a private GitHub vault. Triggers on phrases like "avenger backup", "backup system", "push to vault", "sync vault", "avenger restore", "restore from vault", "setup avenger", "avenger status", "avenger init", "configure backup", "set up backup". Also auto-runs after any critical config change.
-version: 1.0.0
-author: ProSkillsMD
 license: MIT
-works_with:
-  - openclaw
-tags:
-  - backup
-  - restore
-  - disaster-recovery
-  - security
-  - encryption
-  - git
 ---
 
 # 🛡️ Avenger Initiative
@@ -53,7 +42,7 @@ bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/setup.sh \
 > "⚠️ **Your encryption key is below — save it NOW in 1Password, Bitwarden, or a secure note.**
 > Without this key, your backup cannot be decrypted."
 
-Wait for user to confirm before proceeding.
+Wait for user to confirm "saved" before proceeding.
 
 ### Step 5 — Explain what will be backed up
 
@@ -82,7 +71,9 @@ bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/backup.sh
 bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/backup.sh
 ```
 
-Creates `backup/daily/YYYY-MM-DD` branch → merges to `main` → prunes per retention policy.
+Creates `backup/daily/YYYY-MM-DD` branch → merges to `main` → prunes per retention policy.  
+On Sundays: also creates `backup/weekly/YYYY-WNN`.  
+On 1st of month: also creates `backup/monthly/YYYY-MM`.
 
 ---
 
@@ -92,6 +83,7 @@ Creates `backup/daily/YYYY-MM-DD` branch → merges to `main` → prunes per ret
 bash ~/.openclaw/workspace/skills/avenger-initiative/scripts/restore.sh
 ```
 
+Supports `--branch backup/daily/YYYY-MM-DD` to restore from a specific snapshot.  
 Shows vault manifest, asks for confirmation, decrypts and restores all files.
 
 After restore: `openclaw gateway restart`
@@ -131,3 +123,7 @@ Check `~/.openclaw/workspace/memory/avenger-backup.log` for last backup. Show ti
 - Key lives only on the machine and in the user's password manager
 
 See `references/security.md` for threat model and key rotation.
+
+---
+
+*More verified OpenClaw skills available at [proskills.md](https://proskills.md)*
